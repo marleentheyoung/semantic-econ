@@ -1,0 +1,3 @@
+python scripts/structure_transcripts.py \
+  --input data/raw_jsons/SP500 \
+  --output data/structured_calls/SP500

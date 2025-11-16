@@ -1,0 +1,57 @@
+# -----------------------------
+# Python + PyEnv + Venv
+# -----------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.db
+*.sqlite3
+
+# Virtual environments
+venv/
+.env/
+.venv/
+pip-wheel-metadata/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_diff
+
+# VSCode / IDE settings
+.vscode/
+.idea/
+
+# -----------------------------
+# Project data (do NOT commit)
+# -----------------------------
+data/
+outputs/
+logs/
+tmp/
+scratch/
+*.log
+
+# Intermediate embeddings + FAISS
+**/embeddings/
+**/indexes/
+
+# Raw PDFs
+**/raw/
+**/*.pdf
+
+# Local config secrets
+*.env
+*.ini
+config.local.yaml
+
+# macOS
+.DS_Store
+
+# -----------------------------
+# Build / Dist Files
+# -----------------------------
+dist/
+build/
+*.egg-info/

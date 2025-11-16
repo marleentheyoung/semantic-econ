@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "semantic-measurement"
+version = "0.1.0"
+description = "Semantic measurement and retrieval pipeline."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "Your Name" }
+]
+
+# Automatically discover packages inside src/
+[tool.setuptools.packages.find]
+where = ["src"]
