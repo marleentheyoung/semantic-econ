@@ -4,6 +4,9 @@ from semantic_measurement.indicators.indicator_builder import IndicatorBuilder
 meta = {
     "CALL123": {
         "total_snippets": 100,
+        "total_sentences" : 300,
+        "management_sentences" : 180,
+        "qa_sentences" : 120,
         "management_snippets": 60,
         "qa_snippets": 40,
     }

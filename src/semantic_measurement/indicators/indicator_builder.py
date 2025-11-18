@@ -19,26 +19,28 @@ class IndicatorBuilder:
     """
     Converts paragraph-level concept hits into call-level indicators.
 
-    Computes:
-    - Exposure: (# concept paragraphs) / (# total paragraphs in call)
-    - Intensity: sum(similarity scores)
-    - AvgSim: average similarity score
+    ALL exposure measures are denominated in SENTENCES:
 
-    All computed:
-    - overall
-    - management-only
-    - qa-only
+        Exposure     = (sum sentence_count of hits) / (total sentences in call)
+        AvgSim       = average similarity of hits
+        Intensity    = Exposure * AvgSim
+
+    Computed overall and separately for:
+        - Management-only
+        - QA-only
     """
 
     def __init__(self, call_metadata: Dict[str, Dict[str, Any]]):
         """
         call_metadata:
-            {call_id: {
-                "total_snippets",
-                "management_snippets",
-                "qa_snippets",
-                ...
-            }}
+            {
+                call_id: {
+                    "total_sentences",
+                    "management_sentences",
+                    "qa_sentences",
+                    ...
+                }
+            }
         """
         self.call_metadata = call_metadata
 
@@ -46,70 +48,54 @@ class IndicatorBuilder:
         self,
         hits_by_call: Dict[str, List[ParagraphHit]],
     ) -> Dict[str, Dict[str, Any]]:
-        """
-        Input:
-            hits_by_call = {
-                call_id: [ParagraphHit, ParagraphHit, ...]
-            }
 
-        Output:
-            indicators = {
-                call_id: {
-                    'exposure': float,
-                    'avgSim': float,
-                    'intensity': float,
-                    'mgmt_exposure': float,
-                    'qa_exposure': float,
-                    ...
-                }
-            }
-        """
         indicators: Dict[str, Dict[str, Any]] = {}
 
         for call_id, hits in hits_by_call.items():
             meta = self.call_metadata.get(call_id)
             if meta is None:
-                # skip calls not in metadata
                 continue
 
-            total_par = meta["total_snippets"]
-            mgmt_par = meta["management_snippets"]
-            qa_par = meta["qa_snippets"]
+            total_sent = meta["total_sentences"]
+            mgmt_sent = meta["management_sentences"]
+            qa_sent   = meta["qa_sentences"]
 
-            # Split hits by section
+            # Split hits
             mgmt_hits = [h for h in hits if h.section == "management"]
             qa_hits   = [h for h in hits if h.section == "qa"]
 
-            ### ——————————————————————————————
+            ### -------------------------------------------------
             ### OVERALL
-            ### ——————————————————————————————
-            total_hits = len(hits)
+            ### -------------------------------------------------
+            total_hit_sent = sum(h.sentence_count for h in hits)
             sim_scores = [h.similarity for h in hits]
 
-            exposure = total_hits / total_par if total_par > 0 else 0
+            exposure = total_hit_sent / total_sent if total_sent > 0 else 0
             avgSim   = sum(sim_scores)/len(sim_scores) if sim_scores else 0
-            intensity = sum(sim_scores)
+            intensity = exposure * avgSim
 
-            ### ——————————————————————————————
+            ### -------------------------------------------------
             ### MANAGEMENT
-            ### ——————————————————————————————
+            ### -------------------------------------------------
+            mgmt_hit_sent = sum(h.sentence_count for h in mgmt_hits)
             mgmt_scores = [h.similarity for h in mgmt_hits]
 
-            mgmt_exposure = len(mgmt_hits) / mgmt_par if mgmt_par > 0 else 0
+            mgmt_exposure = mgmt_hit_sent / mgmt_sent if mgmt_sent > 0 else 0
             mgmt_avgSim   = sum(mgmt_scores)/len(mgmt_scores) if mgmt_scores else 0
-            mgmt_intensity = sum(mgmt_scores)
+            mgmt_intensity = mgmt_exposure * mgmt_avgSim
 
-            ### ——————————————————————————————
+            ### -------------------------------------------------
             ### QA
-            ### ——————————————————————————————
+            ### -------------------------------------------------
+            qa_hit_sent = sum(h.sentence_count for h in qa_hits)
             qa_scores = [h.similarity for h in qa_hits]
 
-            qa_exposure = len(qa_hits) / qa_par if qa_par > 0 else 0
+            qa_exposure = qa_hit_sent / qa_sent if qa_sent > 0 else 0
             qa_avgSim   = sum(qa_scores)/len(qa_scores) if qa_scores else 0
-            qa_intensity = sum(qa_scores)
+            qa_intensity = qa_exposure * qa_avgSim
 
             indicators[call_id] = {
-                # TOTALS
+                # TOTAL
                 "exposure": exposure,
                 "avgSim": avgSim,
                 "intensity": intensity,
@@ -124,10 +110,15 @@ class IndicatorBuilder:
                 "qa_avgSim": qa_avgSim,
                 "qa_intensity": qa_intensity,
 
-                # Counters
-                "n_hits_total": total_hits,
+                # Counters (for debugging)
+                "n_hits_total": len(hits),
                 "n_hits_mgmt": len(mgmt_hits),
                 "n_hits_qa": len(qa_hits),
+
+                # Sentence-weighted counts
+                "sentences_total_hits": total_hit_sent,
+                "sentences_mgmt_hits": mgmt_hit_sent,
+                "sentences_qa_hits": qa_hit_sent,
             }
 
         return indicators

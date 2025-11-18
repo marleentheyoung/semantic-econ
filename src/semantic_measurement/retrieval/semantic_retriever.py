@@ -10,43 +10,20 @@ import numpy as np
 
 
 class SemanticRetriever:
-    """
-    Unified semantic retriever for multiple FAISS indices
-    (e.g., SP500 + STOXX600).
-
-    Loads:
-      - FAISS index from data/indexes/{index}/semantic_index.faiss
-      - snippets from   data/embeddings/{index}_mpnet/snippets.json
-    """
 
     def __init__(
         self,
         embedder,
-        data_root: Path,
+        index_dir: Path,
+        embeddings_dir: Path,
         index_names: List[str],
     ):
-        """
-        Parameters
-        ----------
-        embedder : SentenceTransformerBackend
-        data_root : Path
-            The project's DATA_ROOT directory
-        index_names : list[str]
-        """
         self.embedder = embedder
         self.indexes = {}
 
         for name in index_names:
-
-            # FAISS FILE
-            faiss_path = (
-                data_root / "indexes" / name / "semantic_index.faiss"
-            )
-
-            # SNIPPETS FILE
-            snippets_path = (
-                data_root / "embeddings" / f"{name}_mpnet" / "snippets.json"
-            )
+            faiss_path = index_dir / name / "semantic_index.faiss"
+            snippets_path = embeddings_dir / f"{name}_mpnet" / "snippets.json"
 
             if not faiss_path.exists():
                 raise FileNotFoundError(f"FAISS index missing: {faiss_path}")
@@ -54,17 +31,14 @@ class SemanticRetriever:
             if not snippets_path.exists():
                 raise FileNotFoundError(f"snippets.json missing: {snippets_path}")
 
-            # Load FAISS
             index = faiss.read_index(str(faiss_path))
 
-            # Load snippets
             with snippets_path.open("r", encoding="utf-8") as f:
                 snippets = json.load(f)
 
             self.indexes[name] = {
                 "faiss_index": index,
                 "snippets": snippets,
-                "name": name,
             }
 
     # ---------------------------------------------------------

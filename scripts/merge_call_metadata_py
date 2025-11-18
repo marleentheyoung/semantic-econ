@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+import json
+from pathlib import Path
+
+meta_dir = Path("data/metadata")
+out_file = Path("data/metadata/all_calls.json")
+
+files = [
+    meta_dir / "SP500_calls.json",
+    meta_dir / "STOXX600_calls.json",
+]
+
+merged = {}
+
+for f in files:
+    if f.exists():
+        with f.open("r") as fh:
+            d = json.load(fh)
+            merged.update(d)
+    else:
+        print(f"Warning: Missing metadata file: {f}")
+
+with out_file.open("w") as fh:
+    json.dump(merged, fh, indent=2)
+
+print(f"✓ Merged metadata written to {out_file}")
+print(f"Total calls: {len(merged)}")

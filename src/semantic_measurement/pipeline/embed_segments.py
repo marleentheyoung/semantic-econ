@@ -14,7 +14,7 @@ import logging
 
 from semantic_measurement.embeddings.embed_segments import embed_paragraphs_to_chunks
 from semantic_measurement.data.schemas import ParagraphRecord
-from semantic_measurement.config import DATA_ROOT
+from semantic_measurement.config import DATA_ROOT, DEFAULT_EMBEDDING_MODEL
 
 
 def load_paragraphs(path: Path):
@@ -98,7 +98,7 @@ def main():
         help="Market index to process."
     )
 
-    parser.add_argument("--model", default="sentence-transformers/all-mpnet-base-v2")
+    parser.add_argument("--model", default=DEFAULT_EMBEDDING_MODEL)
     parser.add_argument("--chunk-size", type=int, default=50_000)
     parser.add_argument("--batch-size", type=int, default=64)
 

@@ -3,15 +3,7 @@ from typing import List, Dict, Any
 from dataclasses import dataclass
 
 from semantic_measurement.retrieval.semantic_retriever import SemanticRetriever
-
-
-@dataclass
-class RetrievedHit:
-    score: float
-    call_id: str
-    index_name: str
-    snippet: dict
-
+from semantic_measurement.indicators.indicator_builder import ParagraphHit
 
 class ConceptRetriever:
     """
@@ -34,7 +26,7 @@ class ConceptRetriever:
     # -------------------------------------------------------
     # Main retrieval API
     # -------------------------------------------------------
-    def retrieve_hits(self) -> Dict[str, List[RetrievedHit]]:
+    def retrieve_hits(self) -> Dict[str, List[ParagraphHit]]:
         """
         Returns:
             dict[call_id → list[RetrievedHit]]
@@ -49,17 +41,15 @@ class ConceptRetriever:
                     continue
 
                 snippet = item["snippet"]
-                call_id = snippet["call_id"]
 
-                hit = RetrievedHit(
-                    score=item["score"],
-                    call_id=call_id,
-                    index_name=item["index_name"],
-                    snippet=snippet,
+                hit = ParagraphHit(
+                    faiss_id=item["faiss_id"],
+                    similarity=item["score"],
+                    sentence_count=snippet.get("sentence_count", 1),
+                    section=snippet.get("section", "management"),
+                    call_id=snippet["call_id"],
                 )
 
-                if call_id not in hits_by_call:
-                    hits_by_call[call_id] = []
-                hits_by_call[call_id].append(hit)
+                hits_by_call.setdefault(hit.call_id, []).append(hit)
 
         return hits_by_call

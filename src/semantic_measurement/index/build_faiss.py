@@ -30,7 +30,7 @@ def build_index_from_embeddings(
 ) -> Dict[str, Any]:
     """
     Build a FAISS index from stored embedding chunks.
-
+    
     Parameters
     ----------
     chunks_index_file : Path
@@ -43,38 +43,38 @@ def build_index_from_embeddings(
         Name for the index.
     metric : {"ip", "l2"}
         Metric for the FAISS index.
-
+    
     Returns
     -------
     metadata : dict
         Index metadata including dimension and ntotal.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
-
+    
     # -----------------------------------------------------
     # Load chunk paths
     # -----------------------------------------------------
     chunk_paths = load_chunk_paths(chunks_index_file)
     if not chunk_paths:
         raise ValueError(f"No chunk files listed in {chunks_index_file}")
-
+    
     # -----------------------------------------------------
     # Determine embedding dimension from first chunk
     # -----------------------------------------------------
     first_chunk = np.load(chunk_paths[0])
     dim = first_chunk.shape[1]
-
+    
     if metric == "ip":
         index = faiss.IndexFlatIP(dim)
     else:
         index = faiss.IndexFlatL2(dim)
-
+    
     # -----------------------------------------------------
     # Add first chunk
     # -----------------------------------------------------
     index.add(first_chunk.astype(np.float32))
     del first_chunk
-
+    
     # -----------------------------------------------------
     # Add remaining chunks
     # -----------------------------------------------------
@@ -82,13 +82,29 @@ def build_index_from_embeddings(
         emb = np.load(path).astype(np.float32)
         index.add(emb)
         del emb
-
+    
+    # -----------------------------------------------------
+    # ✅ VALIDATE: Ensure FAISS index aligns with snippets
+    # -----------------------------------------------------
+    with snippets_file.open("r", encoding="utf-8") as f:
+        snippets = json.load(f)
+    
+    if index.ntotal != len(snippets):
+        raise ValueError(
+            f"FAISS/snippet count mismatch!\n"
+            f"  FAISS index has {index.ntotal} vectors\n"
+            f"  snippets.json has {len(snippets)} entries\n"
+            f"  These must be exactly equal for correct retrieval."
+        )
+    
+    print(f"✅ Validation passed: {index.ntotal} embeddings == {len(snippets)} snippets")
+    
     # -----------------------------------------------------
     # Save FAISS index
     # -----------------------------------------------------
     index_path = output_dir / f"{index_name}.faiss"
     save_index(index, index_path)
-
+    
     # -----------------------------------------------------
     # Write metadata
     # -----------------------------------------------------
@@ -104,9 +120,9 @@ def build_index_from_embeddings(
             "metadata": str(output_dir / f"{index_name}_metadata.json"),
         },
     }
-
+    
     metadata_path = output_dir / f"{index_name}_metadata.json"
     with metadata_path.open("w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2)
-
+    
     return metadata

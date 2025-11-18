@@ -9,3 +9,5 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 # Default: <project_root>/data
 # You can change this to an absolute path if you prefer.
 DATA_ROOT = PROJECT_ROOT / "data"
+
+DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-mpnet-base-v2"
