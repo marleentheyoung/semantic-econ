@@ -64,6 +64,12 @@ def main():
 
     parser.add_argument("--all", action="store_true",
                         help="Run ALL ingestion stages")
+    
+    # Embedding-specific parameters
+    parser.add_argument("--batch-size", type=int, default=64,
+                        help="Batch size for embedding computation (default: 64, recommended: 128-256 for M3 Pro)")
+    parser.add_argument("--chunk-size", type=int, default=150_000,
+                        help="Number of embeddings per .npy chunk (default: 50000)")
 
     args = parser.parse_args()
 
@@ -98,7 +104,11 @@ def main():
 
     if args.embeddings:
         header(f"STEP 4: Compute embeddings for {index}")
-        embed_segments(index)
+        embed_segments(
+            index=index,
+            batch_size=args.batch_size,
+            chunk_size=args.chunk_size,
+        )
 
     if args.faiss:
         header(f"STEP 5: Build FAISS index for {index}")

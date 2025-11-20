@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 import faiss
-import json
+import pyarrow.parquet as pq
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -23,18 +23,19 @@ class SemanticRetriever:
 
         for name in index_names:
             faiss_path = index_dir / name / "semantic_index.faiss"
-            snippets_path = embeddings_dir / f"{name}_mpnet" / "snippets.json"
+            snippets_path = embeddings_dir / f"{name}_mpnet" / "snippets.parquet"  # CHANGED: .json → .parquet
 
             if not faiss_path.exists():
                 raise FileNotFoundError(f"FAISS index missing: {faiss_path}")
 
             if not snippets_path.exists():
-                raise FileNotFoundError(f"snippets.json missing: {snippets_path}")
+                raise FileNotFoundError(f"snippets.parquet missing: {snippets_path}")
 
             index = faiss.read_index(str(faiss_path))
 
-            with snippets_path.open("r", encoding="utf-8") as f:
-                snippets = json.load(f)
+            # CHANGED: Read from Parquet and convert to list of dicts
+            table = pq.read_table(snippets_path)
+            snippets = table.to_pylist()
 
             self.indexes[name] = {
                 "faiss_index": index,

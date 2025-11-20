@@ -12,7 +12,7 @@ import argparse
 import logging
 from pathlib import Path
 
-from semantic_measurement.config import DATA_ROOT
+from semantic_measurement.config.global_calibration import DATA_ROOT
 from semantic_measurement.preprocessing.paragraph_extractor import (
     extract_paragraphs_from_folder,
 )

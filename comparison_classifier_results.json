@@ -1,0 +1,11 @@
+{
+  "summary": {
+    "jaccard": 0.01291638341264446,
+    "intersection": 19,
+    "A_only": 58,
+    "B_only": 1394
+  },
+  "retrieval_threshold": 0.3799999999999999,
+  "classifier_threshold": 0.5,
+  "n_paragraphs": 16915
+}

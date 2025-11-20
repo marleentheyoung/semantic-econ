@@ -12,11 +12,13 @@ import argparse
 import logging
 from pathlib import Path
 
-from semantic_measurement.config import DATA_ROOT
+from semantic_measurement.config.global_calibration import DATA_ROOT
 from semantic_measurement.data.pdf_metadata import build_metadata_lookup
 from semantic_measurement.data.structure_transcripts import (
     structure_all_transcripts_from_parts,
 )
+
+from semantic_measurement.parsing.qna_parser import parse_qna_section
 
 
 def structure_transcripts(index: str):

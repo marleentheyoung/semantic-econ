@@ -1,3 +1,13 @@
-python scripts/structure_transcripts.py \
-  --input data/raw_jsons/SP500 \
-  --output data/structured_calls/SP500
+cd "/Users/marleendejonge/Desktop/ECC-data-generation/data/raw/STOXX600" \
+&& ls -1 | shuf -n 1500 | xargs -I {} cp "{}" "/Users/marleendejonge/Desktop/semantic_measurement_project/data/raw/STOXX600/"
+
+
+Next steps:
+
+python -c "import torch; print(f'MPS available: {torch.backends.mps.is_available()}')"
+
+# Optimal for speed + memory efficiency
+python scripts/run_ingestion_pipeline.py --all --index SP500 --batch-size 256
+
+# If you want maximum speed and have no memory issues
+python scripts/run_ingestion_pipeline.py --all --index SP500 --batch-size 512

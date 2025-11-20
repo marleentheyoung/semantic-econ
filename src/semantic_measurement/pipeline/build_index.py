@@ -11,7 +11,7 @@ import argparse
 import logging
 from pathlib import Path
 
-from semantic_measurement.config import DATA_ROOT
+from semantic_measurement.config.global_calibration import DATA_ROOT
 from semantic_measurement.index.build_faiss import build_index_from_embeddings
 
 
@@ -22,7 +22,7 @@ def build_faiss_index(index: str):
     index_output_dir = DATA_ROOT / "indexes" / index
 
     chunks_index_file = embeddings_dir / "chunks_index.json"
-    snippets_file = embeddings_dir / "snippets.json"
+    snippets_file = embeddings_dir / "snippets.parquet"  # CHANGED: .json → .parquet
 
     # -------------------------
     # Validate all required files
@@ -34,7 +34,7 @@ def build_faiss_index(index: str):
         raise FileNotFoundError(f"Missing chunks_index.json at: {chunks_index_file}")
 
     if not snippets_file.exists():
-        raise FileNotFoundError(f"Missing snippets.json at: {snippets_file}")
+        raise FileNotFoundError(f"Missing snippets.parquet at: {snippets_file}")  # CHANGED
 
     index_output_dir.mkdir(parents=True, exist_ok=True)
 

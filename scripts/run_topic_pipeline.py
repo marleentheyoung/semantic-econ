@@ -12,7 +12,7 @@ import pandas as pd
 
 from semantic_measurement.pipeline.topic_runner import TopicRunner
 from semantic_measurement.pipeline.call_metadata_loader import load_call_metadata
-from semantic_measurement.config import DEFAULT_EMBEDDING_MODEL, DATA_ROOT
+from semantic_measurement.config.global_calibration import DEFAULT_EMBEDDING_MODEL, DATA_ROOT
 
 
 def main():
@@ -25,11 +25,25 @@ def main():
 
     parser.add_argument("--queries-root", type=Path, default=Path("data/queries"))
     parser.add_argument("--model", default=DEFAULT_EMBEDDING_MODEL)
+
     parser.add_argument(
         "--output",
         type=Path,
         default=Path("outputs/panels"),
         help="Directory to write the output panel parquet file",
+    )
+
+    parser.add_argument(
+        "--streaming",
+        action="store_true",
+        help="Use memory-efficient streaming mode (recommended for batch processing)"
+    )
+
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=1000,
+        help="Batch size for streaming mode (default: 1000)"
     )
 
     args = parser.parse_args()
@@ -45,7 +59,10 @@ def main():
         model_name=args.model,
     )
 
-    df = runner.run_topic(args.topic)
+    if args.streaming:
+        df = runner.run_topic_streaming(args.topic, batch_size=args.batch_size)
+    else:
+        df = runner.run_topic(args.topic)
 
     # Save output
     args.output.mkdir(parents=True, exist_ok=True)

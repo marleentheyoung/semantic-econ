@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List, Literal, Dict, Any
 import numpy as np
 import faiss
+import pyarrow.parquet as pq
 from tqdm import tqdm
 
 from .faiss_index import save_index
@@ -36,7 +37,7 @@ def build_index_from_embeddings(
     chunks_index_file : Path
         JSON file listing embedding chunk paths.
     snippets_file : Path
-        JSON file with paragraph/snippet metadata (ordered).
+        Parquet file with paragraph/snippet metadata (ordered).
     output_dir : Path
         Directory where index and metadata will be saved.
     index_name : str
@@ -86,18 +87,19 @@ def build_index_from_embeddings(
     # -----------------------------------------------------
     # ✅ VALIDATE: Ensure FAISS index aligns with snippets
     # -----------------------------------------------------
-    with snippets_file.open("r", encoding="utf-8") as f:
-        snippets = json.load(f)
+    # CHANGED: Read from Parquet instead of JSON
+    table = pq.read_table(snippets_file)
+    num_snippets = len(table)
     
-    if index.ntotal != len(snippets):
+    if index.ntotal != num_snippets:
         raise ValueError(
             f"FAISS/snippet count mismatch!\n"
             f"  FAISS index has {index.ntotal} vectors\n"
-            f"  snippets.json has {len(snippets)} entries\n"
+            f"  snippets.parquet has {num_snippets} entries\n"
             f"  These must be exactly equal for correct retrieval."
         )
     
-    print(f"✅ Validation passed: {index.ntotal} embeddings == {len(snippets)} snippets")
+    print(f"✅ Validation passed: {index.ntotal} embeddings == {num_snippets} snippets")
     
     # -----------------------------------------------------
     # Save FAISS index
