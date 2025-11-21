@@ -34,7 +34,8 @@ def extract_transcripts(index: str, num_parts: int = 10, memory_limit_gb: float 
 
     data_root: Path = DATA_ROOT
 
-    pdf_root = data_root / "raw" / index
+    # pdf_root = data_root / "raw" / index
+    pdf_root = Path("/Users/marleendejonge/Desktop/ECC-data-generation/data/raw/") / index
     output_folder = data_root / "intermediaries" / "raw_jsons" / index
     output_folder.mkdir(parents=True, exist_ok=True)
     output_basename = output_folder / "transcripts_data"

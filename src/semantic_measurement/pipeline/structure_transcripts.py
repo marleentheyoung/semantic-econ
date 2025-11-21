@@ -37,7 +37,7 @@ def structure_transcripts(index: str):
     # -------------------------------------------------------------------------
     # Infer paths from index
     # -------------------------------------------------------------------------
-    pdf_root = data_root / "raw" / index
+    pdf_root = Path("/Users/marleendejonge/Desktop/ECC-data-generation/data/raw/") / index
     input_folder = data_root / "intermediaries" / "raw_jsons" / index
     output_folder = data_root / "intermediaries" / "structured_calls" / index
 

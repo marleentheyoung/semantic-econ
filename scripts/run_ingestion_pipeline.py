@@ -66,7 +66,7 @@ def main():
                         help="Run ALL ingestion stages")
     
     # Embedding-specific parameters
-    parser.add_argument("--batch-size", type=int, default=64,
+    parser.add_argument("--batch-size", type=int, default=256,
                         help="Batch size for embedding computation (default: 64, recommended: 128-256 for M3 Pro)")
     parser.add_argument("--chunk-size", type=int, default=150_000,
                         help="Number of embeddings per .npy chunk (default: 50000)")
